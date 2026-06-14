@@ -278,8 +278,12 @@ const DeliveryDetailsScreen: React.FC = () => {
       await updateTaskStatus(detail.taskId, "picked_up");
       setDetail((prev) => prev ? { ...prev, status: "picked_up" } : prev);
       navigation.navigate("ActiveTracking", { taskId: detail.taskId });
-    } catch {
-      Alert.alert("Алдаа", "Төлвийг шинэчлэхэд алдаа гарлаа. Дахин оролдоно уу.");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Төлвийг шинэчлэхэд алдаа гарлаа. Дахин оролдоно уу.";
+      Alert.alert("Алдаа", message);
     } finally {
       setMarking(false);
     }
@@ -297,8 +301,12 @@ const DeliveryDetailsScreen: React.FC = () => {
       await claimDeliveryTask(detail.taskId);
       setDetail((prev) => prev ? { ...prev, status: "assigned" } : prev);
       Alert.alert("Амжилттай", "Даалгавар амжилттай хүлээн авлаа.");
-    } catch {
-      Alert.alert("Алдаа", "Даалгавар хүлээн авахад алдаа гарлаа. Дахин оролдоно уу.");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Даалгавар хүлээн авахад алдаа гарлаа. Дахин оролдоно уу.";
+      Alert.alert("Алдаа", message);
     } finally {
       setClaiming(false);
     }

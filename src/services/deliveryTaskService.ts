@@ -189,13 +189,27 @@ export const claimDeliveryTask = async (
     });
 
     if (error) {
-      console.error("Error claiming task:", error);
-      throw error;
+      console.error("[claimDeliveryTask] RPC error:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw new Error(error.message || "claim_delivery_task RPC failed");
     }
 
-    return data as ClaimTaskResponse;
+    const result = data as ClaimTaskResponse;
+    if (!result?.success) {
+      const message = result?.message || "Даалгавар хүлээн авахад алдаа гарлаа.";
+      console.error("[claimDeliveryTask] RPC returned success=false:", message);
+      throw new Error(message);
+    }
+
+    return result;
   } catch (error) {
-    console.error("claimDeliveryTask error:", error);
+    const message =
+      error instanceof Error ? error.message : JSON.stringify(error);
+    console.error("[claimDeliveryTask] caught:", message);
     throw error;
   }
 };

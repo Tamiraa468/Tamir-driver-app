@@ -1,50 +1,123 @@
-# Welcome to your Expo app 👋
+# Delivery Diploma — Хүргэлтийн курьер апп
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Курьерүүдэд зориулсан хүргэлтийн мобайл аппликейшн (React Native / Expo). Курьер боломжит хүргэлтүүдийг харж, ажил авч, бараа авах болон хүргэх цэгийг газрын зураг дээр хянаж, OTP кодоор хүргэлтийг баталгаажуулж, орлогоо хянадаг. Backend талаар тусдаа Merchant Portal (Next.js)-той нэг Supabase санг хуваалцана.
 
-## Get started
+Хэрэглэгчийн интерфейс бүхэлдээ **монгол хэл** дээр (жишээ нь: "Нүүр", "Хүргэлт", "Орлого").
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Ашигласан технологи, хэрэгсэл
 
-2. Start the app
+| Чиглэл | Технологи |
+|--------|-----------|
+| Framework | React Native `0.81.5`, Expo SDK `~54`, React `19.1.0` |
+| Хэл | TypeScript `~5.9` |
+| Навигаци | React Navigation (native-stack, bottom-tabs) |
+| Backend | Supabase (PostgreSQL, Auth, Storage, Edge Functions, Realtime) |
+| Газрын зураг | react-native-maps, expo-location |
+| Загвар (UI) | StyleSheet + design constants, NativeWind (Tailwind for RN) |
+| Форм / валидаци | react-hook-form, zod |
+| Бусад | expo-image-picker, expo-document-picker, expo-haptics, lucide-react-native, AsyncStorage |
+| Email (OTP) | Supabase Edge Function + nodemailer + Gmail SMTP |
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Суулгах болон ажиллуулах заавар (Installation & Setup)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Шаардлага
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Node.js (LTS) болон npm
+- Expo CLI (`npx expo` ашиглана, тусад нь суулгах шаардлагагүй)
+- Supabase төслийн URL ба anon key
 
-## Get a fresh project
-
-When you're ready, run:
+### 1. Эх кодыг татах
 
 ```bash
-npm run reset-project
+git clone <repository-url>
+cd delivery_diploma
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Хамаарлуудыг суулгах
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Орчны хувьсагч тохируулах
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Төслийн үндсэн хавтсанд `.env` файл үүсгэж дараах утгуудыг оруулна:
 
-## Join the community
+```bash
+EXPO_PUBLIC_SUPABASE_URL=<таны-supabase-url>
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<таны-supabase-anon-key>
+```
 
-Join our community of developers creating universal apps.
+### 4. Аппыг ажиллуулах
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run web        # Вэб хөтөч дээр (хөгжүүлэлтэд хамгийн түгээмэл)
+npm start          # Expo dev server
+npm run android    # Android emulator/төхөөрөмж
+npm run ios        # iOS simulator
+npm run lint       # ESLint шалгалт
+```
+
+### Supabase Edge Function (OTP email) тохируулах
+
+```bash
+supabase secrets set GMAIL_USER=<gmail-хаяг>
+supabase secrets set GMAIL_APP_PASSWORD=<gmail-app-password>
+supabase functions deploy send-otp-email
+```
+
+---
+
+## Үндсэн функцууд
+
+- **Бүртгэл / Нэвтрэлт** — курьерийн бүртгэл, нэвтрэлт (Supabase Auth).
+- **KYC баталгаажуулалт** — иргэний үнэмлэх зэрэг бичиг баримтыг Supabase Storage-д байршуулж, админ зөвшөөрлийг хүлээх урсгал.
+- **Боломжит хүргэлтүүд (Нүүр)** — нийтлэгдсэн ажлуудын нийтийн сан, realtime шинэчлэлттэй.
+- **Ажил авах (Claim)** — атомик `claim_delivery_task` RPC, нэг идэвхтэй ажлын хязгаарлалттай.
+- **Хүргэлтийн урсгал** — `draft → published → assigned → picked_up → delivered → completed` гэсэн төлвийн дамжлага.
+- **Бараа авах / хүргэх хяналт** — газрын зураг дээр маршрут, байршил хянах.
+- **OTP-ээр баталгаажуулах (EPOD)** — хүргэлт дуусахад 6 оронтой OTP-г email-ээр илгээж, bcrypt-ээр шалгана.
+- **Орлого** — гүйцэтгэсэн хүргэлтүүдийн орлогын хяналт (`courier_earnings`).
+- **Профайл** — курьерийн мэдээлэл, тохиргоо.
+
+### Аппын төлвийн урсгал (навигаци)
+
+- Нэвтрээгүй → Login / Register
+- Нэвтэрсэн + KYC шаардлагатай → KYC дэлгэц
+- Нэвтэрсэн + KYC илгээсэн → Зөвшөөрөл хүлээх дэлгэц
+- Нэвтэрсэн + блоклогдсон → Блоклогдсон дэлгэц
+- Нэвтэрсэн + зөвшөөрөгдсөн → Үндсэн апп (Tab-ууд)
+
+---
+
+## Төслийн бүтэц (товч)
+
+```
+src/
+├── components/ui/     # Дахин ашиглагддаг UI компонентууд
+├── config/            # Supabase client тохиргоо
+├── constants/         # design.ts — өнгө, зай, радиус, фонт
+├── context/           # CourierAuthContext, CartContext
+├── navigation/        # Root navigator, tab бүтэц
+├── screens/           # Дэлгэцүүд (courier/, auth/)
+├── services/          # courierAuthService, deliveryTaskService, storageService
+└── types/             # TypeScript төрлүүд
+
+supabase/
+├── migrations/        # SQL migration, RPC функцууд
+└── functions/         # Edge Functions (send-otp-email)
+```
+
+---
+
+## Гишүүд
+
+| Нэр | Оюутны дугаар |
+|-----|----------------|
+| Ү. Тамир | s21c011b |
+</content>
+</invoke>
